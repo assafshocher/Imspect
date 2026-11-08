@@ -1,3 +1,9 @@
+# Imspect 0.3.1 for Windows / 0.2.2 for Mac
+
+- Use the revised sharp/blurred magnifying-glass icon throughout both apps: application icon, header, and About window. The longer handle remains on the blurred right side.
+- Use transparent tile corners for clean display in the Dock, taskbar, and app headers.
+- Remove the Windows preview label from the application, installer, current documentation, and release.
+
 # Imspect 0.3.0 — Windows preview
 
 - Add a standalone Qt desktop edition for Windows 10/11 x64, with a per-user installer and portable ZIP. The core app includes its runtime; Python installation is not required.

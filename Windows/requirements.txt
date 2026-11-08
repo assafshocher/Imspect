@@ -1,4 +1,4 @@
-# Runtime dependencies for the Windows preview. Python 3.9–3.12;
+# Runtime dependencies for the Windows app. Python 3.9–3.12;
 # the published x64 build uses Python 3.11.
 PySide6==6.8.3
 numpy==2.0.2

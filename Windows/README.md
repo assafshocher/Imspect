@@ -2,19 +2,19 @@
 
 **Every pixel. Under inspection.**
 
-Imspect 0.3.0 is a native Qt desktop research preview for comparing, inspecting, and editing images on **64-bit Windows 10 or 11**. The core app works locally and offline. Its installer includes Python and its runtime libraries; users do not need to install Python separately.
+Imspect 0.3.1 is a native Qt desktop app for comparing, inspecting, and editing images on **64-bit Windows 10 or 11**. The core app works locally and offline. Its installer includes Python and its runtime libraries; users do not need to install Python separately.
 
-[Download the Windows preview](https://github.com/assafshocher/Imspect/releases/tag/v0.3.0-windows-preview) · [Mac version](../README.md) · [Source code](https://github.com/assafshocher/Imspect)
+[Download for Windows](https://github.com/assafshocher/Imspect/releases/tag/v0.3.1-windows) · [Mac version](../README.md) · [Source code](https://github.com/assafshocher/Imspect)
 
 ## Install and start
 
-1. Download **Imspect-0.3.0-Windows-x64-Setup.exe** from the release page.
+1. Download **Imspect-0.3.1-Windows-x64-Setup.exe** from the release page.
 2. Run the installer. It installs for the current user and creates a Start menu shortcut; administrator access is not required.
 3. Open **Imspect**, then choose **Demo** or open your images. Images can also be pasted from the clipboard or dropped onto the window.
 
-The preview is **unsigned**. Windows may show an unknown-publisher or SmartScreen notice. Verify that the download came from this repository. Release downloads include `SHA256SUMS.txt` for checking their integrity.
+The Windows build is **unsigned**. Windows may show an unknown-publisher or SmartScreen notice. Verify that the download came from this repository. Release downloads include `SHA256SUMS.txt` for checking their integrity.
 
-For a portable copy, download **Imspect-0.3.0-Windows-x64-Portable.zip**, extract the entire folder, and run `Imspect.exe` inside it. Keep the `_internal` folder beside the executable. Uninstall an installed copy through Windows Settings → Apps; deleting the portable folder removes that copy.
+For a portable copy, download **Imspect-0.3.1-Windows-x64-Portable.zip**, extract the entire folder, and run `Imspect.exe` inside it. Keep the `_internal` folder beside the executable. Uninstall an installed copy through Windows Settings → Apps; deleting the portable folder removes that copy.
 
 This is an x64 build. Native Windows ARM64 and 32-bit Windows packages are not provided. ARM emulation and high-DPI multi-monitor configurations need additional hardware coverage.
 
@@ -109,8 +109,8 @@ The [Windows workflow](../.github/workflows/windows.yml) runs on `windows-2022` 
 4. Runs the actual installer into a directory containing spaces, starts that installed app from outside the source checkout, and checks uninstall.
 5. Uploads the packages, checksums, test reports, screenshots, and installed dependency list as workflow artifacts.
 
-Ordinary source pushes produce artifacts only. A successful build triggered by tag `v0.3.0-windows-preview`, or an explicitly published manual workflow, creates the GitHub prerelease. A failed test prevents publication. Existing published release assets are never silently replaced.
+Ordinary source pushes produce artifacts only. A successful build triggered by tag `v0.3.1-windows`, or an explicitly published manual workflow, creates the GitHub release. A failed test prevents publication. Existing published release assets are never silently replaced.
 
-These checks are automated Windows validation. They do not establish exhaustive manual usability, GPU, printer, monitor, or physical-machine compatibility. Inspect the workflow evidence and release notes for what passed on a particular build. This preview and the Swift Mac release are maintained separately.
+These checks are automated Windows validation. They do not establish exhaustive manual usability, GPU, printer, monitor, or physical-machine compatibility. Inspect the workflow evidence and release notes for what passed on a particular build. The Windows and Swift Mac editions are maintained separately.
 
 See [THIRD_PARTY.md](THIRD_PARTY.md) and the bundled `licenses` directory for dependency notices.

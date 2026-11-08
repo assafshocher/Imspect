@@ -27,7 +27,7 @@ try {
     Copy-Item (Join-Path $projectDir "README.md") $applicationDir -Force
     Copy-Item (Join-Path $projectDir "THIRD_PARTY.md") $applicationDir -Force
 
-    $portable = Join-Path $releaseDir "Imspect-0.3.0-Windows-x64-Portable.zip"
+    $portable = Join-Path $releaseDir "Imspect-0.3.1-Windows-x64-Portable.zip"
     if (Test-Path $portable) { Remove-Item $portable }
     Compress-Archive -Path $applicationDir -DestinationPath $portable -CompressionLevel Optimal
 

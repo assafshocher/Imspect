@@ -110,6 +110,18 @@ final class WorkspaceController: NSWindowController, NSTableViewDataSource, NSTa
     }
     required init?(coder: NSCoder) { fatalError() }
 
+    var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.2.2"
+    }
+    func brandImage() -> NSImage? {
+        if let url = Bundle.main.url(forResource: "ImspectMark", withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            image.isTemplate = false
+            return image
+        }
+        return NSImage(systemSymbolName: "magnifyingglass", accessibilityDescription: "Imspect")
+    }
+
     func text(_ string: String, size: CGFloat = 12, color: NSColor = .secondaryLabelColor, bold: Bool = false) -> NSTextField {
         let v = NSTextField(labelWithString: string); v.font = bold ? .systemFont(ofSize: size, weight: .semibold) : .systemFont(ofSize: size)
         v.textColor = color; return v
@@ -132,10 +144,14 @@ final class WorkspaceController: NSWindowController, NSTableViewDataSource, NSTa
         shell.distribution = .fill
         root.addSubview(shell)
         NSLayoutConstraint.activate([shell.leadingAnchor.constraint(equalTo: root.leadingAnchor), shell.trailingAnchor.constraint(equalTo: root.trailingAnchor), shell.topAnchor.constraint(equalTo: root.topAnchor), shell.bottomAnchor.constraint(equalTo: root.bottomAnchor)])
-        let logo = text("◉  Imspect", size: 23, color: .labelColor, bold: true)
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.2.1"
-        let brandTitle = stack(.horizontal, spacing: 8, [logo, text("v" + version, size: 10)])
-        let brand = stack(.vertical, spacing: 2, [brandTitle, text("EVERY PIXEL. UNDER INSPECTION.", size: 9, color: accent)])
+        let logo = NSImageView()
+        logo.image = brandImage(); logo.imageScaling = .scaleProportionallyUpOrDown
+        logo.setAccessibilityLabel("Imspect")
+        logo.widthAnchor.constraint(equalToConstant: 42).isActive = true
+        logo.heightAnchor.constraint(equalToConstant: 42).isActive = true
+        let brandTitle = stack(.horizontal, spacing: 8, [text("Imspect", size: 23, color: .labelColor, bold: true), text("v" + appVersion, size: 10)])
+        let brandText = stack(.vertical, spacing: 2, [brandTitle, text("EVERY PIXEL. UNDER INSPECTION.", size: 9, color: accent)])
+        let brand = stack(.horizontal, spacing: 10, [logo, brandText])
         let flexible = NSView()
         let header = stack(.horizontal, spacing: 12, [brand, flexible, button("Demo", #selector(demoAction)), button("Open images…", #selector(openImages)), button("Paste", #selector(pasteImages)), button("Copy", #selector(copyImage)), button("Export…", #selector(exportImage))])
         header.edgeInsets = NSEdgeInsets(top: 14, left: 20, bottom: 14, right: 20)

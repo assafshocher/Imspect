@@ -19,7 +19,8 @@ PY
 chmod +x "$APP/Contents/Resources/Research/Setup.command"
 cp "$SOURCE_DIR/README.md" "$APP/Contents/Resources/README.md"
 cp "$SOURCE_DIR/RESEARCH.md" "$APP/Contents/Resources/RESEARCH.md"
-if [ -f "$SOURCE_DIR/Imspect.icns" ]; then cp "$SOURCE_DIR/Imspect.icns" "$APP/Contents/Resources/Imspect.icns"; fi
+cp "$SOURCE_DIR/Imspect.icns" "$APP/Contents/Resources/Imspect.icns"
+cp "$SOURCE_DIR/Assets/ImspectMark.png" "$APP/Contents/Resources/ImspectMark.png"
 find "$APP" -name '__pycache__' -type d -prune -exec rm -rf {} +
 codesign --force --deep --sign - "$APP"
 codesign --verify --deep --strict "$APP"

@@ -83,7 +83,7 @@ def load_image(path):
         bits = getattr(source, "tag_v2", {}).get(258, (8,))
         bits = bits if isinstance(bits, (tuple, list)) else (bits,)
         if any(b > 8 for b in bits) and source.mode not in ("I;16", "I;16L", "I;16B"):
-            raise ValueError("High-bit-depth RGB TIFF import is not supported in this preview; use 16-bit sRGB PNG.")
+            raise ValueError("High-bit-depth RGB TIFF import is not supported; use 16-bit sRGB PNG.")
         if source.mode in ("I;16", "I;16L", "I;16B"):
             if profile:
                 raise ValueError("16-bit ICC conversion is unsupported; convert explicitly to sRGB PNG.")
@@ -91,7 +91,7 @@ def load_image(path):
             a = np.concatenate((np.repeat(v[..., None], 3, axis=2), np.ones((*v.shape, 1), np.float32)), axis=2)
             return validate_image(_oriented(a, orientation))
         if source.mode in ("I", "F"):
-            raise ValueError("Integer/float scientific image import needs a declared range and is not supported in this preview.")
+            raise ValueError("Integer/float scientific image import needs a declared range and is not supported.")
         image = ImageOps.exif_transpose(source)
         alpha = image.convert("RGBA").getchannel("A")
         if profile:

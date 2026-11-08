@@ -1,5 +1,5 @@
 #define AppName "Imspect"
-#define AppVersion "0.3.0"
+#define AppVersion "0.3.1"
 #ifndef SourceDir
   #define SourceDir "dist\Imspect"
 #endif
@@ -11,7 +11,7 @@
 AppId={{DFB3B96B-0DA4-4773-8C10-F29F15C06BBA}
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppVerName={#AppName} {#AppVersion} Windows Preview
+AppVerName={#AppName} {#AppVersion} Windows
 AppPublisher=Assaf Shocher
 AppPublisherURL=https://github.com/assafshocher/Imspect
 AppSupportURL=https://github.com/assafshocher/Imspect/issues

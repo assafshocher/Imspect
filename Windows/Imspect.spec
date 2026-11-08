@@ -36,7 +36,7 @@ if not manifest_path.is_file():
         if not archive_path.is_file():
             print("Collecting upstream Qt notices:", url)
             temporary = archive_path.with_suffix(".part")
-            request = urllib.request.Request(url, headers={"User-Agent": "Imspect-build/0.3.0"})
+            request = urllib.request.Request(url, headers={"User-Agent": "Imspect-build/0.3.1"})
             with urllib.request.urlopen(request, timeout=120) as response, temporary.open("wb") as output:
                 while True:
                     block = response.read(1024 * 1024)

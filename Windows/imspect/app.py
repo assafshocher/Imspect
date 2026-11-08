@@ -110,7 +110,7 @@ class Histogram(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f'Imspect {__version__} · Windows preview')
+        self.setWindowTitle(f'Imspect {__version__} · Windows')
         self.setWindowIcon(QIcon(str(resource_path('assets/imspect.png'))))
         self.resize(1480, 900)
         self.setMinimumSize(1050, 680)
@@ -377,7 +377,7 @@ class MainWindow(QMainWindow):
         split.setStretchFactor(0, 0)
         split.setStretchFactor(1, 1)
         split.setStretchFactor(2, 0)
-        self.statusBar().showMessage('Local processing · Float32 encoded sRGB · Windows preview 0.3.0')
+        self.statusBar().showMessage(f'Local processing · Float32 encoded sRGB · Windows {__version__}')
 
     def _build_menus(self):
         def action(menu, title, shortcut, fn):
@@ -406,7 +406,7 @@ class MainWindow(QMainWindow):
         action(view, '100%', None, self.canvas.one_to_one)
         help_menu = self.menuBar().addMenu('&Help')
         action(help_menu, 'User guide', None, lambda: QDesktopServices.openUrl(QUrl('https://github.com/assafshocher/Imspect/blob/main/Windows/README.md')))
-        action(help_menu, 'About Imspect', None, lambda: QMessageBox.about(self, 'Imspect', f'Imspect {__version__} · Windows preview\nLocal image comparison for computer vision.\nQt/PySide6 desktop edition.\nPixel metrics exclude annotations and display zoom.'))
+        action(help_menu, 'About Imspect', None, lambda: QMessageBox.about(self, 'Imspect', f'Imspect {__version__} · Windows\nLocal image comparison for computer vision.\nQt/PySide6 desktop edition.\nPixel metrics exclude annotations and display zoom.'))
 
     def notify_error(self, message):
         self.statusBar().showMessage(str(message), 12000)

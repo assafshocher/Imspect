@@ -18,12 +18,14 @@ def main():
     from PySide6.QtCore import QTimer
     from PySide6.QtWidgets import QApplication
     from imspect.app import MainWindow,apply_style
+    from imspect import __version__
     app=QApplication(sys.argv[:1])
     app.setApplicationName('Imspect')
     app.setOrganizationName('Imspect')
-    app.setApplicationVersion('0.3.0')
+    app.setApplicationVersion(__version__)
     apply_style(app)
     window=MainWindow()
+    app.setWindowIcon(window.windowIcon())
     window.testing=bool(args.smoke_test)
     if args.smoke_test:
         from imspect.smoke import run_smoke

@@ -409,7 +409,11 @@ extension WorkspaceController {
     }
 
     @objc func showAbout() {
-        alert("Imspect · Research Preview", "A native, local image comparison workspace.\n\nSynchronized split, flicker, and boundary wipe; shared region and pixel inspection; reproducible image transforms and explicit metric conventions.\n\nWorking pixels: Float32 encoded sRGB, straight RGBA. Workspaces preserve current images and originals without PNG quantization. Native image exports use 16-bit PNG.\n\nResizeRight-compatible resampling is implemented in Swift. Optional learned quality models run through the separate research engine.\n\nResearch preview: verify conventions against your benchmark before reporting results.")
+        let about = NSAlert()
+        about.icon = brandImage()
+        about.messageText = "Imspect " + appVersion
+        about.informativeText = "A native, local image comparison workspace.\n\nSynchronized split, flicker, and boundary wipe; shared region and pixel inspection; reproducible image transforms and explicit metric conventions.\n\nWorking pixels: Float32 encoded sRGB, straight RGBA. Workspaces preserve current images and originals without PNG quantization. Native image exports use 16-bit PNG.\n\nResizeRight-compatible resampling is implemented in Swift. Optional learned quality models run through the separate research engine."
+        about.runModal()
     }
 
     @objc func showKeyboardHelp() {

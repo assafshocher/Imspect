@@ -2,13 +2,13 @@
 
 **Every pixel. Under inspection.**
 
-A desktop app for comparing, inspecting, and editing images for computer-vision research. The Mac edition uses Swift and AppKit; the Windows preview uses native Qt widgets. The core app works locally and offline, without a browser or account.
+A desktop app for comparing, inspecting, and editing images for computer-vision research. The Mac edition uses Swift and AppKit; the Windows edition uses native Qt widgets. The core app works locally and offline, without a browser or account.
 
-**[Download Imspect 0.2.1 for Mac](https://github.com/assafshocher/Imspect/releases/download/v0.2.1/Imspect.dmg)** · [User guide](GUIDE.md) · [Research models](RESEARCH.md) · [Changelog](CHANGELOG.md)
+**[Download Imspect 0.2.2 for Mac](https://github.com/assafshocher/Imspect/releases/download/v0.2.2/Imspect.dmg)** · [User guide](GUIDE.md) · [Research models](RESEARCH.md) · [Changelog](CHANGELOG.md)
 
-**[Download Imspect 0.3.0 for Windows (preview)](https://github.com/assafshocher/Imspect/releases/download/v0.3.0-windows-preview/Imspect-0.3.0-Windows-x64-Setup.exe)** · [Windows guide](Windows/README.md) · [Portable ZIP and checksums](https://github.com/assafshocher/Imspect/releases/tag/v0.3.0-windows-preview)
+**[Download Imspect 0.3.1 for Windows](https://github.com/assafshocher/Imspect/releases/download/v0.3.1-windows/Imspect-0.3.1-Windows-x64-Setup.exe)** · [Windows guide](Windows/README.md) · [Portable ZIP and checksums](https://github.com/assafshocher/Imspect/releases/tag/v0.3.1-windows)
 
-Windows 10/11 x64; the core app includes Python. This preview is unsigned and may show an unknown-publisher notice. The two editions share image-processing conventions; workspace files use separate formats.
+Windows 10/11 x64; the core app includes Python. This build is unsigned and may show an unknown-publisher notice. The two editions share image-processing conventions; workspace files use separate formats.
 
 ## Features
 
@@ -29,7 +29,7 @@ The downloadable build supports **Apple silicon Macs with macOS 13 or later**.
 2. Drag **Imspect** into **Applications**.
 3. Open Imspect. Use **Demo** to explore a synthetic comparison, or open/paste your images.
 
-This research-preview release is **ad-hoc signed, not Apple-notarized**. macOS may block the first launch. If you trust the download, try opening it, then use **System Settings → Privacy & Security → Open Anyway**, following [Apple's instructions](https://support.apple.com/en-us/102445). No system-wide security changes are required.
+This release is **ad-hoc signed, not Apple-notarized**. macOS may block the first launch. If you trust the download, try opening it, then use **System Settings → Privacy & Security → Open Anyway**, following [Apple's instructions](https://support.apple.com/en-us/102445). No system-wide security changes are required.
 
 ## Mac quick controls
 
@@ -73,7 +73,7 @@ Tests cover the image engine, ResizeRight parity fixtures, workspaces, native in
 
 Native image samples are Float32 RGBA in **encoded sRGB**. Comparison metrics use the same source coordinates, independently of display zoom and annotations. Imspect does not silently align, resize, composite, or clip inputs to obtain a score. SSIM uses an 11×11 Gaussian window with σ 1.5 and valid window centers; ΔE is CIE76. Full definitions are in the [guide](GUIDE.md#metrics-and-scientific-conventions).
 
-This is a research preview. Raw tensor/EXR import, geometric registration, and a persistent edit graph are not currently included. Large images and expensive filters can consume substantial memory; the input limit is 64 million pixels. The [Windows guide](Windows/README.md) documents that edition's export paths and automated Windows validation.
+Raw tensor/EXR import, geometric registration, and a persistent edit graph are not currently included. Large images and expensive filters can consume substantial memory; the input limit is 64 million pixels. The [Windows guide](Windows/README.md) documents that edition's export paths and automated Windows validation.
 
 ## Optional research models
 
