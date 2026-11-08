@@ -4,7 +4,7 @@
 
 A desktop app for comparing, inspecting, and editing images for computer-vision research. The Mac edition uses Swift and AppKit; the Windows edition uses native Qt widgets. The core app works locally and offline, without a browser or account.
 
-**[Download Imspect 0.2.2 for Mac](https://github.com/assafshocher/Imspect/releases/download/v0.2.2/Imspect.dmg)** · [User guide](GUIDE.md) · [Research models](RESEARCH.md) · [Changelog](CHANGELOG.md)
+**[Download Imspect 0.2.2 for Mac](https://assafshocher.github.io/assets/Imspect-0.2.2.dmg)** · [User guide](GUIDE.md) · [Research models](RESEARCH.md) · [Changelog](CHANGELOG.md)
 
 **[Download Imspect 0.3.1 for Windows](https://github.com/assafshocher/Imspect/releases/download/v0.3.1-windows/Imspect-0.3.1-Windows-x64-Setup.exe)** · [Windows guide](Windows/README.md) · [Portable ZIP and checksums](https://github.com/assafshocher/Imspect/releases/tag/v0.3.1-windows)
 
