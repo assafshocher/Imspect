@@ -1,0 +1,200 @@
+name: Windows build and installer
+
+on:
+  push:
+    branches: [main]
+    tags: [v0.3.0-windows-preview]
+    paths:
+      - Windows/**
+      - Research/**
+      - Tests/resize-fixtures.json
+      - .github/workflows/windows.yml
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the tested 0.3.0 Windows preview release
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build, install, and test on Windows x64
+    runs-on: windows-2022
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONUTF8: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PYTHONPATH: ${{ github.workspace }}/Windows
+      IMSPECT_NO_DOWNLOADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+          cache: pip
+          cache-dependency-path: |
+            Windows/requirements.txt
+            Windows/requirements-dev.txt
+
+      - name: Install pinned build dependencies
+        run: |
+          python -m pip install -r Windows/requirements-dev.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
+          python -m pip check
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency consistency check failed' }
+          New-Item -ItemType Directory -Force Windows/verification | Out-Null
+          python -m pip freeze | Set-Content Windows/verification/installed-packages.txt
+          Get-ComputerInfo -Property OsName,OsVersion,OsArchitecture | Format-List | Out-File Windows/verification/windows-host.txt
+
+      - name: Scientific and interaction tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python -m pytest Windows/tests -v --junitxml=Windows/verification/unit-tests.xml
+          if ($LASTEXITCODE -ne 0) { throw 'Scientific or interaction tests failed' }
+          python -m unittest discover -s Research -p test_backend.py
+          if ($LASTEXITCODE -ne 0) { throw 'Research worker protocol tests failed' }
+
+      - name: Locate installer compiler
+        run: |
+          $candidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+            "$env:ProgramFiles\Inno Setup 7\ISCC.exe"
+          )
+          $compiler = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $compiler) {
+            choco install innosetup --no-progress --yes
+            if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed' }
+            $compiler = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+          if (-not $compiler) { throw 'Could not locate Inno Setup compiler' }
+          "IMSPECT_ISCC=$compiler" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build standalone application and installer
+        run: ./Windows/build.ps1 -Iscc "$env:IMSPECT_ISCC"
+
+      - name: Verify bundled license notices
+        run: |
+          $licenses = Get-ChildItem Windows/dist/Imspect/_internal/licenses -File -Recurse
+          if ($licenses.Count -eq 0) { throw 'No license files were bundled' }
+          $licenses.FullName | Set-Content Windows/verification/bundled-license-files.txt
+          $lgpl = $licenses | Where-Object { $_.Name -match 'LGPL.*3|LGPLv3' }
+          if (-not $lgpl) { throw 'The Qt LGPLv3 license text is missing' }
+          if (-not (Test-Path Windows/dist/Imspect/_internal/Research/vendor/resize_right/LICENSE)) {
+            throw 'The ResizeRight license is missing'
+          }
+
+      - name: Test portable EXE using the Windows desktop plugin
+        run: |
+          Remove-Item Env:QT_QPA_PLATFORM -ErrorAction SilentlyContinue
+          Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+          $app = (Resolve-Path Windows/dist/Imspect/Imspect.exe).Path
+          $evidence = Join-Path $env:GITHUB_WORKSPACE 'Windows/verification/portable'
+          $process = Start-Process -FilePath $app -ArgumentList @('--smoke-test', "`"$evidence`"") -PassThru
+          if (-not $process.WaitForExit(180000)) {
+            $process.Kill()
+            throw 'Packaged app did not complete its smoke test within 3 minutes'
+          }
+          if ($process.ExitCode -ne 0) { throw "Packaged app smoke test failed: $($process.ExitCode)" }
+          if (-not (Test-Path "$evidence/report.json")) { throw 'Packaged app did not write its test report' }
+          if (-not (Get-ChildItem $evidence -Filter *.png)) { throw 'Packaged app did not produce a Windows rendering screenshot' }
+
+      - name: Install and test the installed application
+        run: |
+          Remove-Item Env:QT_QPA_PLATFORM -ErrorAction SilentlyContinue
+          Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+          $installer = (Resolve-Path Windows/release/Imspect-0.3.0-Windows-x64-Setup.exe).Path
+          $installDir = Join-Path $env:RUNNER_TEMP 'Imspect installation check'
+          $log = Join-Path $env:GITHUB_WORKSPACE 'Windows/verification/install.log'
+          $install = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/DIR=`"$installDir`"", "/LOG=`"$log`"") -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Installer failed: $($install.ExitCode)" }
+          if (-not (Test-Path "$installDir/Imspect.exe")) { throw 'Installer did not create Imspect.exe' }
+          $evidence = Join-Path $env:GITHUB_WORKSPACE 'Windows/verification/installed'
+          $process = Start-Process -FilePath "$installDir/Imspect.exe" -WorkingDirectory $env:RUNNER_TEMP -ArgumentList @('--smoke-test', "`"$evidence`"") -PassThru
+          if (-not $process.WaitForExit(180000)) {
+            $process.Kill()
+            throw 'Installed app did not complete its smoke test within 3 minutes'
+          }
+          if ($process.ExitCode -ne 0) { throw "Installed app smoke test failed: $($process.ExitCode)" }
+          if (-not (Test-Path "$evidence/report.json")) { throw 'Installed app did not write its test report' }
+          if (-not (Get-ChildItem $evidence -Filter *.png)) { throw 'Installed app did not produce a Windows rendering screenshot' }
+          $uninstall = Start-Process -FilePath "$installDir/unins000.exe" -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Uninstall failed: $($uninstall.ExitCode)" }
+          if (Test-Path "$installDir/Imspect.exe") { throw 'Uninstall left the application executable behind' }
+
+      - name: Upload Windows verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Imspect-Windows-verification-${{ github.run_id }}
+          path: Windows/verification/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload tested installer and portable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Imspect-Windows-x64-${{ github.run_id }}
+          path: Windows/release/
+          retention-days: 30
+          if-no-files-found: error
+
+  publish:
+    name: Publish Windows preview
+    needs: build
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/tags/v0.3.0-windows-preview') ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Imspect-Windows-x64-${{ github.run_id }}
+          path: release
+      - name: Create prerelease with tested binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TARGET: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=v0.3.0-windows-preview
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "A release already exists at $tag. Existing published binaries will not be replaced."
+            exit 1
+          fi
+          cat > release-notes.md <<'EOF'
+          Imspect for **64-bit Windows 10/11** — native Qt desktop research preview.
+
+          Download **Imspect-0.3.0-Windows-x64-Setup.exe** for installation, or extract the **Portable.zip** and run `Imspect.exe` inside its folder. Python is bundled; no separate Python installation is required for the core app.
+
+          Split, flicker and wipe comparisons; synchronized pan/zoom; pixel and region inspection; reference metrics and histograms; difference/FFT views; annotations and image edits. See [the Windows guide](https://github.com/assafshocher/Imspect/blob/v0.3.0-windows-preview/Windows/README.md).
+
+          This preview is **unsigned**. Windows may show an unknown-publisher or SmartScreen notice. Optional research models require a separate local Python environment and explicit model downloads. Windows workspaces use `.imspectw`; they are not the Mac `.imspect` format.
+
+          The release pipeline runs scientific/interaction tests, launches the packaged app on Windows, installs the actual installer, launches the installed app, captures screenshots/reports, and checks uninstall. This is automated Windows validation; it is not a claim of exhaustive physical-hardware or manual desktop testing. The Mac 0.2.1 download remains separate.
+          EOF
+          gh release create "$tag" \
+            --target "$RELEASE_TARGET" \
+            --title 'Imspect 0.3.0 — Windows preview' \
+            --prerelease \
+            --notes-file release-notes.md \
+            release/Imspect-0.3.0-Windows-x64-Setup.exe \
+            release/Imspect-0.3.0-Windows-x64-Portable.zip \
+            release/SHA256SUMS.txt
