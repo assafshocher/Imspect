@@ -6,7 +6,9 @@ A desktop app for comparing, inspecting, and editing images for computer-vision 
 
 **[Download Imspect 0.2.1 for Mac](https://github.com/assafshocher/Imspect/releases/download/v0.2.1/Imspect.dmg)** · [User guide](GUIDE.md) · [Research models](RESEARCH.md) · [Changelog](CHANGELOG.md)
 
-**Windows:** see the [Windows installation, usage, and build guide](Windows/README.md) for the 0.3.0 preview. The two editions share image-processing conventions; workspace files use separate formats.
+**[Download Imspect 0.3.0 for Windows (preview)](https://github.com/assafshocher/Imspect/releases/download/v0.3.0-windows-preview/Imspect-0.3.0-Windows-x64-Setup.exe)** · [Windows guide](Windows/README.md) · [Portable ZIP and checksums](https://github.com/assafshocher/Imspect/releases/tag/v0.3.0-windows-preview)
+
+Windows 10/11 x64; the core app includes Python. This preview is unsigned and may show an unknown-publisher notice. The two editions share image-processing conventions; workspace files use separate formats.
 
 ## Features
 
