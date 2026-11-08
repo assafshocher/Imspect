@@ -8,3 +8,12 @@ __pycache__/
 *.dmg
 *.zip
 *.imspect
+.pytest_cache/
+Windows/build/
+Windows/dist/
+Windows/smoke-output/
+Windows/installer-output/
+*.imspectw
+Windows/release/
+Windows/verification/
+.windows-venv/
