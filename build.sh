@@ -52,6 +52,12 @@ with zipfile.ZipFile(output / 'Imspect.zip', 'w', zipfile.ZIP_DEFLATED) as archi
     for path in sorted(app.rglob('*')):
         if path.is_file(): archive.write(path, path.relative_to(app.parent))
 PY
+# Finder may have added type/custom-icon metadata to an existing outer bundle.
+# Preserve its directory identity while removing metadata rejected by codesign.
+for attribute in com.apple.FinderInfo com.apple.ResourceFork; do
+  xattr -d "$attribute" "$OUTPUT_DIR/Imspect.app" 2>/dev/null || true
+done
+codesign --verify --deep --strict "$OUTPUT_DIR/Imspect.app"
 printf 'Built %s/Imspect.app and Imspect.zip\n' "$OUTPUT_DIR"
 if [ "${1:-}" = "--dmg" ]; then
   ln -s /Applications "$STAGING_DIR/Applications"
