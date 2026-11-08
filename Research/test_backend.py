@@ -51,7 +51,8 @@ class ProtocolTests(unittest.TestCase):
 
     def test_resize_bounds(self):
         with tempfile.NamedTemporaryFile() as file:
-            self.assert_error({"operation": "resize", "image": file.name, "output": "/tmp/result.png", "width": 0, "height": 4}, "invalid_size")
+            output = str(Path(file.name).with_suffix(".png"))
+            self.assert_error({"operation": "resize", "image": file.name, "output": output, "width": 0, "height": 4}, "invalid_size")
 
     def test_cli_bad_json_always_writes_response(self):
         with tempfile.TemporaryDirectory() as directory:
