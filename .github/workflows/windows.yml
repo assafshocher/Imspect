@@ -3,7 +3,7 @@ name: Windows build and installer
 on:
   push:
     branches: [main]
-    tags: [v0.3.0-windows-preview]
+    tags: [v0.3.1-windows]
     paths:
       - Windows/**
       - Research/**
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: Publish the tested 0.3.0 Windows preview release
+        description: Publish the tested 0.3.1 Windows release
         type: boolean
         required: false
         default: false
@@ -116,7 +116,7 @@ jobs:
         run: |
           Remove-Item Env:QT_QPA_PLATFORM -ErrorAction SilentlyContinue
           Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
-          $installer = (Resolve-Path Windows/release/Imspect-0.3.0-Windows-x64-Setup.exe).Path
+          $installer = (Resolve-Path Windows/release/Imspect-0.3.1-Windows-x64-Setup.exe).Path
           $installDir = Join-Path $env:RUNNER_TEMP 'Imspect installation check'
           $log = Join-Path $env:GITHUB_WORKSPACE 'Windows/verification/install.log'
           $install = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/DIR=`"$installDir`"", "/LOG=`"$log`"") -Wait -PassThru
@@ -153,10 +153,10 @@ jobs:
           if-no-files-found: error
 
   publish:
-    name: Publish Windows preview
+    name: Publish Windows
     needs: build
     if: >-
-      (github.event_name == 'push' && github.ref == 'refs/tags/v0.3.0-windows-preview') ||
+      (github.event_name == 'push' && github.ref == 'refs/tags/v0.3.1-windows') ||
       (github.event_name == 'workflow_dispatch' && inputs.publish)
     runs-on: ubuntu-latest
     permissions:
@@ -166,7 +166,7 @@ jobs:
         with:
           name: Imspect-Windows-x64-${{ github.run_id }}
           path: release
-      - name: Create prerelease with tested binaries
+      - name: Create release with tested binaries
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -174,27 +174,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag=v0.3.0-windows-preview
+          tag=v0.3.1-windows
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "A release already exists at $tag. Existing published binaries will not be replaced."
             exit 1
           fi
           cat > release-notes.md <<'EOF'
-          Imspect for **64-bit Windows 10/11** — native Qt desktop research preview.
+          Imspect for **64-bit Windows 10/11** — native Qt desktop app.
 
-          Download **Imspect-0.3.0-Windows-x64-Setup.exe** for installation, or extract the **Portable.zip** and run `Imspect.exe` inside its folder. Python is bundled; no separate Python installation is required for the core app.
+          Download **Imspect-0.3.1-Windows-x64-Setup.exe** for installation, or extract the **Portable.zip** and run `Imspect.exe` inside its folder. Python is bundled; no separate Python installation is required for the core app.
 
-          Split, flicker and wipe comparisons; synchronized pan/zoom; pixel and region inspection; reference metrics and histograms; difference/FFT views; annotations and image edits. See [the Windows guide](https://github.com/assafshocher/Imspect/blob/v0.3.0-windows-preview/Windows/README.md).
+          Split, flicker and wipe comparisons; synchronized pan/zoom; pixel and region inspection; reference metrics and histograms; difference/FFT views; annotations and image edits. See [the Windows guide](https://github.com/assafshocher/Imspect/blob/v0.3.1-windows/Windows/README.md).
 
-          This preview is **unsigned**. Windows may show an unknown-publisher or SmartScreen notice. Optional research models require a separate local Python environment and explicit model downloads. Windows workspaces use `.imspectw`; they are not the Mac `.imspect` format.
+          This Windows build is **unsigned**. Windows may show an unknown-publisher or SmartScreen notice. Optional research models require a separate local Python environment and explicit model downloads. Windows workspaces use `.imspectw`; they are not the Mac `.imspect` format.
 
-          The release pipeline runs scientific/interaction tests, launches the packaged app on Windows, installs the actual installer, launches the installed app, captures screenshots/reports, and checks uninstall. This is automated Windows validation; it is not a claim of exhaustive physical-hardware or manual desktop testing. The Mac 0.2.1 download remains separate.
+          The release pipeline runs scientific/interaction tests, launches the packaged app on Windows, installs the actual installer, launches the installed app, captures screenshots/reports, and checks uninstall. This is automated Windows validation; it is not a claim of exhaustive physical-hardware or manual desktop testing. The Mac download is available separately.
           EOF
           gh release create "$tag" \
             --target "$RELEASE_TARGET" \
-            --title 'Imspect 0.3.0 — Windows preview' \
-            --prerelease \
+            --title 'Imspect 0.3.1 — Windows' \
             --notes-file release-notes.md \
-            release/Imspect-0.3.0-Windows-x64-Setup.exe \
-            release/Imspect-0.3.0-Windows-x64-Portable.zip \
+            release/Imspect-0.3.1-Windows-x64-Setup.exe \
+            release/Imspect-0.3.1-Windows-x64-Portable.zip \
             release/SHA256SUMS.txt
