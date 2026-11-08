@@ -1,0 +1,8 @@
+# Resolved versions are written to installed-versions.txt by Setup.command.
+# Core Imspect has no Python dependency. This environment is optional.
+numpy>=1.24,<3
+Pillow>=10,<12
+torch>=2.2,<3
+torchvision>=0.17,<1
+lpips==0.1.4
+pyiqa>=0.1.13,<0.2

@@ -1,0 +1,10 @@
+.build/
+.venv/
+.test-venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+*.app/
+*.dmg
+*.zip
+*.imspect
