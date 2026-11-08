@@ -959,9 +959,21 @@ class MainWindow(QMainWindow):
             path,_=QFileDialog.getOpenFileName(self,'Open Windows workspace','','Imspect Windows workspace (*.imspectw)')
         if not path:
             return
+        if self.dirty and not getattr(self,'testing',False):
+            answer=QMessageBox.question(self,'Save workspace?','Save this comparison before opening another?',QMessageBox.StandardButton.Save|QMessageBox.StandardButton.Discard|QMessageBox.StandardButton.Cancel)
+            if answer==QMessageBox.StandardButton.Cancel:
+                return
+            if answer==QMessageBox.StandardButton.Save:
+                self.save_session()
+                if self.dirty:
+                    return
         try:
             items,state,annotations=load_workspace(path)
             self.stop_play()
+            self.hist_cache.clear()
+            self.metric_key=None
+            self.metric_results=[]
+            self.metric_generation+=1
             self.items=items
             self.selected=int(state.get('selected',0))
             self.partner=int(state.get('partner',1))

@@ -29,21 +29,26 @@ This is an x64 build. Native Windows ARM64 and 32-bit Windows packages are not p
 - Draw points, lines, rectangles, circles, freehand brush strokes, or text. Annotations can be shared across images or attached to one image.
 - Apply grayscale, noise, smoothing, sharpening, bilateral filtering, histogram matching, channel adjustments, or resizing to one image or all images. Undo and Restore original preserve the input files.
 
+Canvas shortcuts apply while the comparison canvas has focus.
+
 | Action | Shortcut |
 |---|---|
-| Switch comparison mode | Tab with canvas focused |
+| Switch comparison mode | Tab |
 | Flicker / choose image | Space / 1–9 |
+| Next / previous image | N or ] / [ |
 | Pan every image | Drag in Pan mode or arrow keys |
 | Pan one source pixel | Alt + arrow |
 | Zoom every image | Ctrl + mouse wheel, + / − |
 | Fit / 100% | F / 0 |
-| Inspect / select region | I / S |
+| Pan / inspect / select region | P / I / S |
 | Rectangle / circle / dot / line | R / C / D / L |
 | Brush / text | B / T |
-| Remove an image | Delete with image list focused |
-| Remove last annotation | Delete with canvas focused |
+| Clear region / cancel drawing | Escape |
+| Remove an image | Delete or Backspace with image list focused |
+| Remove last annotation on selected image | Delete or Backspace with canvas focused |
+| Toggle full screen | F11 |
 
-Use the window's full-screen control for a larger comparison area. Open, paste, copy, export, undo, and workspace actions are also available through the application menus.
+Press **F11** or choose **View → Full screen** for a larger comparison area. Application shortcuts include Ctrl+O to open images, Ctrl+V to paste, Ctrl+C to copy the image or region, Ctrl+E to export, Ctrl+Z to undo a pixel edit, Ctrl+D to duplicate, Ctrl+S to save a workspace, and Ctrl+Shift+O to open a workspace.
 
 ## Image and metric conventions
 
@@ -54,11 +59,11 @@ Stored samples are straight-alpha Float32 RGBA in encoded sRGB. Metrics use the 
 - **Histogram distance:** mean RGB Wasserstein-1 distance over 256 bins, divided by 255.
 - **Color difference:** mean CIE76 ΔE in CIELAB D65.
 - **Resizing and zoom:** centered ResizeRight-compatible kernels with antialiasing for shrinking and symmetric boundaries. Overshoots remain in stored resize results until explicitly clipped.
-- **FFT:** centered luminance FFT with a shared amplitude display scale. Frequency images are visualization products; spatial image metrics still refer to source samples.
+- **FFT:** centered luminance FFT with a shared amplitude display scale. Spatial metrics, pixel inspection, and annotations are disabled in FFT view. Switch View back to Images to inspect and measure source pixels.
 
-Noise and sharpening are bounded edits. Noise amount is specified in 0–255 units; the seed makes an operation repeatable within this implementation. Matching noise seeds between the Swift and Python versions does not imply identical random-number sequences.
+Noise and sharpening are bounded edits. Noise amount is specified in 0–255 units. Seeded noise uses the same SplitMix64 and Box–Muller random-number sequence as the Swift Mac engine.
 
-Native numerical PNG export preserves 16-bit precision. Clipboard images and rasterized annotations follow the display/export path documented by the application; use a numerical export when precision is important. No source image is overwritten automatically.
+PNG export without annotations writes 16-bit sRGB samples, clipping exported values to 0–1 without changing the stored image. Annotated PNGs and clipboard copies use 8-bit display samples. No source image is overwritten automatically.
 
 ## Workspaces
 
@@ -68,7 +73,7 @@ Windows saves self-contained **`.imspectw`** workspaces with originals, current 
 
 LPIPS, NIQE, MUSIQ, and TOPIQ-NR use the existing local Python research worker. Their large dependencies and pretrained weights are **not included** in the core installer. Core comparisons, metrics, filtering, resampling, histograms, and FFT do not require these models.
 
-The research-model controls allow a separate compatible Python environment to be selected. Install its dependencies from the bundled `_internal/Research/requirements.txt` or this repository's `Research/requirements.txt`. Model downloads require an explicit action, and image inference remains local. The worker reports missing dependencies and model errors; it never substitutes placeholder scores.
+In **Research models**, choose a Python 3.10+ executable, then use **Set up model environment…** to create a separate environment and install the model packages. An existing compatible environment can also be selected; dependencies are listed in the bundled `_internal/Research/requirements.txt` or this repository's `Research/requirements.txt`. Pretrained-weight downloads require enabling the download checkbox, and image inference remains local. The worker reports missing dependencies and model errors; it never substitutes placeholder scores.
 
 See [RESEARCH.md](../RESEARCH.md) for numerical preprocessing and upstream model references. Its `Setup.command` installer is for macOS; on Windows use the separate Python environment selected in the app. Pretrained-model quality and hardware-specific inference need separate validation from the core app's tests.
 

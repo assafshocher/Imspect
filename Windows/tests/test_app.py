@@ -11,7 +11,7 @@ import pytest
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QColor
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog, QScrollArea
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QScrollArea
 
 from imspect.app import MainWindow, apply_style
 from imspect import engine
@@ -276,6 +276,50 @@ def test_workspace_roundtrip_restores_samples_annotations_and_controls(window, a
     assert window.canvas.annotations[0]["tool"] == "circle"
     assert window.channels[0].value() == 40
     assert not window.dirty
+
+
+def test_opening_related_workspaces_refreshes_histogram_and_metrics(window, app, tmp_path):
+    pair(window, app)
+    first = tmp_path / "original.imspectw"
+    second = tmp_path / "edited.imspectw"
+    window.save_session(first)
+    window.items[1].apply(solid((.75, .75, .75)), "Changed candidate")
+    window.save_session(second)
+
+    window.open_session(first)
+    settled(app, window)
+    identity = [(item.id, item.revision) for item in window.items]
+    assert candidate_result(window)["mse"] == 0
+    np.testing.assert_array_equal(window.histogram.values.argmax(axis=1), [128, 128, 128])
+
+    window.open_session(second)
+    settled(app, window)
+    # Loaded workspaces reset revisions, while stable IDs survive saved branches.
+    assert [(item.id, item.revision) for item in window.items] == identity
+    assert candidate_result(window)["mse"] == pytest.approx(.25 ** 2)
+    np.testing.assert_array_equal(window.histogram.values.argmax(axis=1), [191, 191, 191])
+    np.testing.assert_array_equal(window.histogram.reference.argmax(axis=1), [128, 128, 128])
+
+
+def test_cancel_open_preserves_unsaved_comparison(window, app, monkeypatch, tmp_path):
+    pair(window, app)
+    incoming = tmp_path / "two-images.imspectw"
+    window.save_session(incoming)
+    window.remove_image()
+    settled(app, window)
+    existing = list(window.items)
+    prompts = []
+    monkeypatch.setattr(QMessageBox, "question", staticmethod(
+        lambda *args, **kwargs: prompts.append(args) or QMessageBox.StandardButton.Cancel))
+    window.testing = False
+    try:
+        window.open_session(incoming)
+    finally:
+        window.testing = True
+    assert len(prompts) == 1
+    assert window.dirty
+    assert len(window.items) == 1
+    assert window.items[0] is existing[0]
 
 
 def test_invalid_regions_mismatched_sizes_and_fft_never_show_fabricated_scores(window, app):

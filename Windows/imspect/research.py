@@ -29,6 +29,7 @@ class ResearchDialog(QDialog):
         self.map_result=None
         self.map_name='LPIPS map'
         self.result=None
+        self._map_context=None
         self.setWindowTitle('Research models · local processing')
         self.resize(690,650)
         self.temp=tempfile.TemporaryDirectory(prefix='imspect-model-')
@@ -75,6 +76,14 @@ class ResearchDialog(QDialog):
         self.save=QPushButton('Save detailed report…');self.save.clicked.connect(self.save_report);row.addWidget(self.save)
         self.add_map=QPushButton('Add map to comparison');self.add_map.setEnabled(False);self.add_map.clicked.connect(self.accept_map);row.addWidget(self.add_map)
         close=QPushButton('Close');close.clicked.connect(self.reject);row.addWidget(close)
+        self.clear_result()
+
+    def clear_result(self):
+        self.result=None
+        self.map_result=None
+        self._map_context=None
+        self.add_map.setEnabled(False)
+        self.save.setEnabled(False)
 
     def browse(self):
         p,_=QFileDialog.getOpenFileName(self,'Choose Python executable','','Python executable (*)')
@@ -87,6 +96,7 @@ class ResearchDialog(QDialog):
     def start(self,args,stage):
         python=self.python.text().strip()
         if not python or not Path(python).is_file():
+            self.clear_result()
             QMessageBox.warning(self,'Python needed','Choose a Python 3.10 or newer executable. Install Python from python.org if it is not available. The core Imspect app works without it.')
             return False
         self.settings.setValue('research_python',python)
@@ -97,7 +107,9 @@ class ResearchDialog(QDialog):
         self.process.start()
         return True
 
-    def request(self,payload):
+    def request(self,payload,map_context=None):
+        self.clear_result()
+        self._map_context=map_context
         base=Path(self.temp.name)
         (base/'request.json').write_text(json.dumps(payload),encoding='utf-8')
         (base/'response.json').unlink(missing_ok=True)
@@ -110,11 +122,13 @@ class ResearchDialog(QDialog):
     def install_environment(self):
         answer=QMessageBox.question(self,'Set up optional models','Create a separate model environment and download PyTorch, LPIPS and IQA dependencies? This can use several gigabytes. Pretrained weights are downloaded separately when you run a metric.')
         if answer!=QMessageBox.StandardButton.Yes:return
+        self.clear_result()
         self.log.clear()
         self.local.mkdir(parents=True,exist_ok=True)
         self.start(['-m','venv',self.env_path],'create_env')
 
     def run_metric(self):
+        self.clear_result()
         if not self.allow.isChecked():
             QMessageBox.information(self,'Download choice','Enable the pretrained-weight download checkbox to run model metrics.')
             return
@@ -138,8 +152,9 @@ class ResearchDialog(QDialog):
                 request['heatmap_max']=1.0
             self.log.clear()
             self.log.appendPlainText('Running locally. First use may download pretrained weights…')
-            self.request(request)
+            self.request(request,(self.item.pixels.shape[:2],tuple(self.roi) if self.roi else None))
         except Exception as exc:
+            self.clear_result()
             QMessageBox.warning(self,'Model input',str(exc))
 
     def read_log(self):
@@ -148,6 +163,7 @@ class ResearchDialog(QDialog):
 
     def process_error(self,error):
         self.busy(False)
+        self.clear_result()
         self.log.appendPlainText(self.process.errorString())
 
     def finished(self,code,status):
@@ -165,8 +181,11 @@ class ResearchDialog(QDialog):
             try:
                 self.result=json.loads(response.read_text())
                 self.log.appendPlainText(json.dumps(self.result,indent=2))
-                self.add_map.setEnabled(bool(self.result.get('ok') and self.result.get('heatmap')))
-            except Exception as e:self.log.appendPlainText(str(e))
+                self.save.setEnabled(True)
+                self.add_map.setEnabled(bool(code==0 and self.result.get('ok') and self.result.get('heatmap') and self._map_context))
+            except Exception as e:
+                self.clear_result()
+                self.log.appendPlainText(str(e))
         elif code:self.log.appendPlainText(f'Worker exited with code {code}; no score was substituted.')
 
     def save_report(self):
@@ -175,10 +194,29 @@ class ResearchDialog(QDialog):
         if path:Path(path).write_text(json.dumps(self.result,indent=2),encoding='utf-8')
 
     def accept_map(self):
-        if self.result and self.result.get('heatmap'):
-            self.map_result=engine.load_image(self.result['heatmap'])
+        if not (self.result and self.result.get('ok') and self.result.get('heatmap') and self._map_context):
+            return
+        try:
+            pixels=engine.load_image(self.result['heatmap'])
+            (height,width),roi=self._map_context
+            if roi is None:
+                if pixels.shape[:2]!=(height,width):
+                    raise ValueError('The LPIPS map dimensions do not match the evaluated image.')
+                output=pixels
+            else:
+                x,y,w,h=roi
+                if pixels.shape[:2]!=(h,w) or x<0 or y<0 or x+w>width or y+h>height:
+                    raise ValueError('The LPIPS map dimensions do not match the evaluated region.')
+                # Keep the comparison's source-coordinate system. Transparent
+                # pixels mark everything outside the region actually evaluated.
+                output=np.zeros((height,width,4),dtype=np.float32)
+                output[y:y+h,x:x+w]=pixels
+            self.map_result=output
             self.map_name='LPIPS spatial map · '+self.item.name
             self.accept()
+        except Exception as exc:
+            self.clear_result()
+            QMessageBox.warning(self,'LPIPS map',str(exc))
 
     def cancel_process(self):
         if self.process.state()!=QProcess.ProcessState.NotRunning:

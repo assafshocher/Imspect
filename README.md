@@ -2,9 +2,11 @@
 
 **Every pixel. Under inspection.**
 
-A native macOS app for comparing, inspecting, and editing images for computer-vision research. Built with Swift and AppKit. The core app works locally and offline, without a browser or account.
+A desktop app for comparing, inspecting, and editing images for computer-vision research. The Mac edition uses Swift and AppKit; the Windows preview uses native Qt widgets. The core app works locally and offline, without a browser or account.
 
 **[Download Imspect 0.2.1 for Mac](https://github.com/assafshocher/Imspect/releases/download/v0.2.1/Imspect.dmg)** · [User guide](GUIDE.md) · [Research models](RESEARCH.md) · [Changelog](CHANGELOG.md)
+
+**Windows:** see the [Windows installation, usage, and build guide](Windows/README.md) for the 0.3.0 preview. The two editions share image-processing conventions; workspace files use separate formats.
 
 ## Features
 
@@ -17,7 +19,7 @@ A native macOS app for comparing, inspecting, and editing images for computer-vi
 - Live RGB controls, grayscale, noise, blur, sharpening, bilateral filtering, histogram matching, resizing, and undo.
 - Clipboard import, drag and drop, native full screen, and self-contained comparison workspaces.
 
-## Install
+## Install on Mac
 
 The downloadable build supports **Apple silicon Macs with macOS 13 or later**.
 
@@ -27,7 +29,7 @@ The downloadable build supports **Apple silicon Macs with macOS 13 or later**.
 
 This research-preview release is **ad-hoc signed, not Apple-notarized**. macOS may block the first launch. If you trust the download, try opening it, then use **System Settings → Privacy & Security → Open Anyway**, following [Apple's instructions](https://support.apple.com/en-us/102445). No system-wide security changes are required.
 
-## Quick controls
+## Mac quick controls
 
 | Action | Shortcut |
 |---|---|
@@ -42,7 +44,7 @@ This research-preview release is **ad-hoc signed, not Apple-notarized**. macOS m
 
 See the [user guide](GUIDE.md) for the complete controls, scientific conventions, and editing behavior. Edits can apply to one image or all images; **all-image edits also modify the reference**.
 
-## Build from source
+## Build the Mac app from source
 
 Requirements: macOS 13+, Apple's command-line developer tools, and Python 3. The full Xcode application is not required.
 
@@ -69,7 +71,7 @@ Tests cover the image engine, ResizeRight parity fixtures, workspaces, native in
 
 Native image samples are Float32 RGBA in **encoded sRGB**. Comparison metrics use the same source coordinates, independently of display zoom and annotations. Imspect does not silently align, resize, composite, or clip inputs to obtain a score. SSIM uses an 11×11 Gaussian window with σ 1.5 and valid window centers; ΔE is CIE76. Full definitions are in the [guide](GUIDE.md#metrics-and-scientific-conventions).
 
-This is a research preview. Raw tensor/EXR import, geometric registration, a persistent edit graph, and a Windows version are not currently included. Large images and expensive filters can consume substantial memory; the native input limit is 64 million pixels.
+This is a research preview. Raw tensor/EXR import, geometric registration, and a persistent edit graph are not currently included. Large images and expensive filters can consume substantial memory; the input limit is 64 million pixels. The [Windows guide](Windows/README.md) documents that edition's export paths and automated Windows validation.
 
 ## Optional research models
 
